@@ -4,63 +4,107 @@ import argparse
 
 LEXICON_FILENAME = "lexicon.txt"
 
-def spellingBee_predict_score(match_list: list, allowed_letters: list):
-    score = 0
-    for m in match_list:
-        all_in = True
-        for i in allowed_letters:
-            if i not in m:
-                all_in = False
-        if all_in == False:
-            score += 1
-        if all_in == True:
-            score += 3
+class SpellingBeeWord:
 
-    return score
+    def __init__(self, word: str = "", required_letter: str = "", allowed_letters: str = ""):
+        self.word = word
+        self.required_letter = required_letter.lower()
+        self.allowed_letters = allowed_letters.lower()
+        self.points = 0
+        self.is_pangram = False
 
-def spellingBee_find_matches(allowed_letters: str, required_letter: str, lexicon: list):
-    allowed_list = list(allowed_letters)
-    print("---")
-    print(f"allowed letters: {allowed_list}")
-    print(f"required letter: {required_letter}")
+        self.isPangram()
+        self.scorePoints()
 
-    if required_letter not in allowed_list:
-        allowed_list.append(required_letter)
+    def isPangram(self):
 
-    match_words= []
+        if set(self.word.lower()) >= set(self.required_letter+self.allowed_letters):
+            self.is_pangram = True
 
-    for word in lexicon:
-        no_good = True
-        if required_letter in word:
-            no_good = False
-            for z in word:
-                if z not in allowed_list:
-                    no_good = True
-        if no_good == False and len(word) > 4:
-            match_words.append(word)
+        return self.is_pangram
 
-    score = spellingBee_predict_score(match_words, allowed_list)
-    return match_words, score
+    def scorePoints(self):
+        """ Returns an estimate of the word's total contribution to the final score. """
 
-def gen_possible_solutions(required_letter: str , allowed_letters: str):
-    entire_lexicon = []
-    print(f'creating possibilities for: [{required_letter}, {allowed_letters}]')
+        if self.word == "":
+            raise ValueError("Word is empty.")
 
-    print("loading entire lexicon...")
-    with open(LEXICON_FILENAME) as lexicon_file:
-        words = lexicon_file.read()
-        entire_lexicon = words.lower().split("\n")
+        # 1 point for 4 letter words
+        if len(self.word) == 4:
+            self.points += 1
 
-    print(f"OK - locked n' loaded! cross checking N possible words: {len(entire_lexicon)}")
-    print("attempting to find solutions...")
-    match_words, score = spellingBee_find_matches(allowed_letters, required_letter, entire_lexicon)
+        # longer words earn 1 point per letter
+        if len(self.word) > 4:
+            self.points += len(self.word)
 
-    print(f"OK - found {len(match_words)} possible words!")
+        # 7 extra points if it's a pangram
+        if self.is_pangram:
+            self.points += 7
 
-    for m in match_words:
-        print(f"{m}")
+class SpellingBeeGame:
+    """ Spelling Bee Game. Load the Lexicon, then run it!"""
 
-    print(f"OK - predicted score: {score}")
+    def __init__(self, required_letter: str, allowed_letters: str):
+        self.required_letter = required_letter
+        self.allowed_letters = allowed_letters
+        self.total_score_estimate = 0
+        self.number_of_pangrams = 0
+        self.dictionary = []
+        self.answers = []
+
+    def load_lexicon(self, lexicon_filename: str = LEXICON_FILENAME):
+
+        with open(lexicon_filename) as lexicon_file:
+            words = lexicon_file.read()
+            self.dictionary = words.lower().split("\n")
+
+        print(f"OK - locked n' loaded! 🔫 \nOK -cross checking N possible words: {len(self.dictionary)}")
+
+    def run(self):
+
+        print("INFO - attempting to find solutions...")
+
+        # find possible words
+        if len(self.dictionary) != 0:
+            allowed_list = list(self.allowed_letters)
+            print(f"INFO - allowed letters:\t{allowed_list}")
+            print(f"INFO - required letter:\t{self.required_letter}")
+
+            if self.required_letter not in allowed_list:
+                allowed_list.append(self.required_letter)
+
+            for word in self.dictionary:
+                possible_answer = False
+
+                if self.required_letter in word:
+                    possible_answer = True
+
+                    for letter in word:
+                        if letter not in allowed_list:
+                            possible_answer = False
+
+                if possible_answer and len(word) >= 4:
+                    # found a match!
+                    sbw = SpellingBeeWord(word, self.required_letter, self.allowed_letters)
+                    self.answers.append(sbw)
+                    if sbw.is_pangram:
+                        self.number_of_pangrams += 1
+
+
+        print("🐝 - DONE! Here are your possible answers:")
+        # estimate total score
+        for ans in self.answers:
+            self.total_score_estimate += ans.points
+
+        for ans in self.answers:
+            if ans.is_pangram:
+                print(f"\t{ans.word} - {ans.points} points\t\t<- is a pangram!")
+            else:
+                print(f"\t{ans.word} - {ans.points} points")
+
+        print(f"OK - found {len(self.answers)} possible words! {self.number_of_pangrams} are pangrams!")
+        print(f"OK - estimated total score: {self.total_score_estimate}")
+
 
 if __name__ == "__main__":
     desc = '🐝 NYT Spelling Bee solutions\' finder!'
@@ -70,4 +114,6 @@ if __name__ == "__main__":
     parser.add_argument('allowed_letters', type=str, nargs='?', default='iptnea', help='allowed letters (in any order)')
 
     args = parser.parse_args()
-    gen_possible_solutions(args.required_letter, args.allowed_letters)
+    game = SpellingBeeGame(args.required_letter.lower(), args.allowed_letters.lower())
+    game.load_lexicon()
+    game.run()
