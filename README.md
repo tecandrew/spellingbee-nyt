@@ -18,62 +18,23 @@ optional arguments:
 ### Example
 
 ```
-./spellingbee.py f ioctne
-creating possibilities for: [f, ioctne]
-loading entire lexicon...
-OK - locked n' loaded! cross checking N possible words: 267751
-attempting to find solutions...
----
-allowed letters: ['i', 'o', 'c', 't', 'n', 'e']
-required letter: f
-OK - found 48 possible words!
-coeffect
-coefficient
-coffee
-coffin
-coffinite
-coiffe
-coinfect
-confect
-confection
-confetti
-confetto
-confine
-confit
-effect
-effete
-efficience
-efficient
-enfeoff
-fecit
-feint
-fence
-fennec
-feoff
-feoffee
-ficin
-fiction
-fient
-fifteen
-finfoot
-finite
-finito
-fitte
-footie
-footnote
-inefficient
-infect
-infection
-infeft
-infeoff
-inficete
-infinite
-nonfiction
-nonfinite
-offence
-office
-often
-tiffin
-toffee
-OK - predicted score: 60
+./spellingbee.py l tyiocd
+OK - locked n' loaded! 🔫
+OK -cross checking N possible words: 370106
+INFO - attempting to find solutions...
+INFO - allowed letters: ['t', 'y', 'i', 'o', 'c', 'd']
+INFO - required letter: l
+🐝 - DONE! Here are your possible answers:
+        cycl - 1 points
+        cyclic - 6 points
+        cyclicity - 9 points
+        ...
+        ditolyl - 7 points
+        docility - 15 points            <- is a pangram!
+        ...
+        tolly - 5 points
+        tolt - 1 points
+        tool - 1 points
+OK - found 144 possible words! 4 are pangrams!
+OK - estimated total score: 642
 ```
